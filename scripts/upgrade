@@ -58,26 +58,6 @@ ynh_script_progression --message="Ensuring downward compatibility..." --time --w
 #	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 #fi
 
-### If nobody installed your app before 4.1,
-### then you may safely remove these lines
-
-# Cleaning legacy permissions
-if ynh_legacy_permissions_exists; then
-	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
-fi
-
-if ! ynh_permission_exists --permission="admin"; then
-	# Create the required permissions
-	ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
-fi
-
-# Create a permission if needed
-if ! ynh_permission_exists --permission="api"; then
-	ynh_permission_create --permission="api" --url "/api" --allowed="visitors" --show_tile="false" --protected="true"
-fi
-
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
@@ -94,13 +74,6 @@ ynh_abort_if_errors
 
 #=================================================
 # STANDARD UPGRADE STEPS
-#=================================================
-# STOP SYSTEMD SERVICE
-#=================================================
-ynh_script_progression --message="Stopping a systemd service..." --time --weight=1
-
-ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/$app.log"
-
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -122,13 +95,6 @@ ynh_script_progression --message="Upgrading NGINX web server configuration..." -
 ynh_add_nginx_config
 
 #=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
-
-ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
 # CREATE DEDICATED USER
 #=================================================
 ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
@@ -145,18 +111,24 @@ ynh_script_progression --message="Upgrading PHP-FPM configuration..." --time --w
 ynh_add_fpm_config
 
 #=================================================
-# SPECIFIC UPGRADE
+# UPGRADE TRANSLATIONS
 #=================================================
-# ...
-#=================================================
+ynh_script_progression --message="Upgrading Translations..." --time --weight=1
 
-#=================================================
-# SETUP SYSTEMD
-#=================================================
-ynh_script_progression --message="Upgrading systemd configuration..." --time --weight=1
-
-# Create a dedicated systemd config
-ynh_add_systemd_config
+### French
+if [ $language == "fr" ]; then
+	if [ -e $final_path/qa-lang/fr ]; then
+		cd $final_path/qa-lang/fr
+		ynh_print_OFF
+		git pull
+		ynh_print_ON
+		cd -
+	else
+		ynh_print_OFF
+		git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr
+		ynh_print_ON
+	fi
+fi
 
 #=================================================
 # MODIFY A CONFIG FILE
@@ -166,7 +138,7 @@ ynh_add_systemd_config
 ### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
 ynh_backup_if_checksum_is_different --file="$final_path/CONFIG_FILE"
 
-ynh_replace_string --match_string="match_string" --replace_string="replace_string" --target_file="$final_path/CONFIG_FILE"
+#ynh_replace_string --match_string="match_string" --replace_string="replace_string" --target_file="$final_path/CONFIG_FILE"
 
 # Recalculate and store the checksum of the file for the next upgrade.
 ynh_store_file_checksum --file="$final_path/CONFIG_FILE"
@@ -179,36 +151,6 @@ ynh_store_file_checksum --file="$final_path/CONFIG_FILE"
 
 # Set permissions on app files
 chown -R root: $final_path
-
-#=================================================
-# SETUP LOGROTATE
-#=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
-
-# Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate --non-append
-
-#=================================================
-# INTEGRATE SERVICE IN YUNOHOST
-#=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --time --weight=1
-
-yunohost service add $app --description="A short description of the app" --log="/var/log/$app/$app.log"
-
-#=================================================
-# START SYSTEMD SERVICE
-#=================================================
-ynh_script_progression --message="Starting a systemd service..." --time --weight=1
-
-ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log"
-
-#=================================================
-# UPGRADE FAIL2BAN
-#=================================================
-ynh_script_progression --message="Reconfiguring Fail2Ban..." --time --weight=1
-
-# Create a dedicated Fail2Ban config
-ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
 
 #=================================================
 # RELOAD NGINX

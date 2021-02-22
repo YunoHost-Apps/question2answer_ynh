@@ -1,7 +1,7 @@
-SOURCE_URL=url of app's source
-SOURCE_SUM=sha256 checksum
+SOURCE_URL=https://github.com/q2a/question2answer/releases/download/v1.8.5/question2answer-1.8.5.zip
+SOURCE_SUM=dfe3dc40a86e5a2ca85ac0582d8a25042ad3fa86293aaf9083b7222a588f6b1e
 SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=tar.gz
+SOURCE_FORMAT=zip
 SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=
+SOURCE_FILENAME=question2answer-1.8.5.zip
 SOURCE_EXTRACT=true
