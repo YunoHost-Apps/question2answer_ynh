@@ -1,5 +1,5 @@
 # See here for more information
-# https://github.com/YunoHost/package_check#syntax-check_process-file
+# https://github.com/YunoHost/package_check#syntax-of-check_process
 
 # Move this file from check_process.default to check_process when you have filled it.
 
@@ -7,11 +7,11 @@
 	; Manifest
 		domain="domain.tld"	(DOMAIN)
 		path="/path"	(PATH)
-		admin="john"	(USER)
 		language="fr"
 		is_public=1	(PUBLIC|public=1|private=0)
+		q2a_name="ATestQ2ASite"
+		admin="john"	(USER)
 		password="pass"
-		port="666"	(PORT)
 	; Checks
 		pkg_linter=1
 		setup_sub_dir=1
@@ -20,7 +20,7 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		upgrade=1	from_commit=CommitHash
+		upgrade=1	from_commit=61a8347e52d061269e83a0db50b21cd66039f453
 		backup_restore=1
 		multi_instance=1
 		port_already_use=0
@@ -28,8 +28,3 @@
 ;;; Options
 Email=
 Notification=none
-;;; Upgrade options
-	; commit=CommitHash
-		name=Name and date of the commit.
-		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&language=fr&is_public=1&password=pass&port=666&
-
