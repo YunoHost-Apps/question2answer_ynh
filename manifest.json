@@ -48,7 +48,11 @@
                 "type": "boolean",
                 "ask": {
                     "en": "Is it a public application?",
-                    "fr": "Est-ce une application publique ?"
+                    "fr": "Est-ce une application publique ?"
+                },
+                "help": {
+                    "en": "If the application is made private, only the users known to this YunoHost instance will be able to see it.",
+                    "fr": "Si l'application est privée, seuls les utilisateurs de cette instance YunuHost pourront y accéder."
                 },
                 "default": true
             },
@@ -86,10 +90,6 @@
                 "ask": {
                     "en": "Set the administrator password",
                     "fr": "Définissez le mot de passe administrateur"
-                },
-                "help": {
-                    "en": "Use the help field to add an information for the admin about this question.",
-                    "fr": "Utilisez le champ aide pour ajouter une information à l'intention de l'administrateur à propos de cette question."
                 },
                 "example": "Choose a password"
             }
