@@ -57,3 +57,16 @@ https://yunohost.org/packaging_apps
  * App website: https://www.question2answer.org
  * Upstream app repository: https://github.com/q2a/question2answer
  * YunoHost website: https://yunohost.org/
+
+---
+
+## Developer info
+
+Please send your pull request to the [testing branch](https://github.com/YunoHost-Apps/question2answer_ynh/tree/testing).
+
+To try the testing branch, please proceed like that.
+```
+sudo yunohost app install https://github.com/YunoHost-Apps/question2answer_ynh/tree/testing --debug
+or
+sudo yunohost app upgrade question2answer -u https://github.com/YunoHost-Apps/question2answer_ynh/tree/testing --debug
+```
