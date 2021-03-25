@@ -111,6 +111,16 @@ ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 ynh_setup_source --dest_dir="$final_path"
 
 #=================================================
+# DOWNLOAD AND UNPACK LDAP PLUGIN
+#=================================================
+ynh_script_progression --message="Setting up LDAP plugin..." --weight=3
+
+wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
+
+unzip qa-ldap-login.zip -d $final_path/qa-plugin
+mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Configuring NGINX web server..." --weight=14

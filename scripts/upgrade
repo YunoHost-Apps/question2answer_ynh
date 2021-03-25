@@ -84,6 +84,11 @@ then
 
 	# Download, check integrity, uncompress and patch the source from app.src
 	ynh_setup_source --dest_dir="$final_path"
+
+	# Setup LDAP
+	wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
+	unzip qa-ldap-login.zip -d $final_path/qa-plugin
+	mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
 fi
 
 #=================================================

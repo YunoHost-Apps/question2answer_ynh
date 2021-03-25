@@ -34,7 +34,7 @@ Cette application se configure via son interface administrateur, accessible sur 
 
 #### Support multi-utilisateur
 
-Cette application supporte le multiutilisateur, mais n'est pas intégrée avec le LDAP ni le SSO.
+Cette application supporte le multiutilisateur et LDAP, mais n'est pas intégrée avec le SSO.
 Les pages d'administration sont protégées par SSOwat.
 
 #### Architectures supportées
