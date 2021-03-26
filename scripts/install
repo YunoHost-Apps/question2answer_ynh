@@ -160,9 +160,7 @@ ynh_script_progression --message="Installing Translations..." --weight=6
 ### French
 
 if [ $language == "fr" ]; then
-	ynh_print_OFF
-	git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr
-	ynh_print_ON
+	git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr 2>&1
 fi
 
 #=================================================

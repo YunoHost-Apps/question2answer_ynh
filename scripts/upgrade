@@ -137,14 +137,10 @@ ynh_script_progression --message="Upgrading Translations..." --time --weight=1
 if [ $language == "fr" ]; then
 	if [ -e $final_path/qa-lang/fr ]; then
 		cd $final_path/qa-lang/fr
-		ynh_print_OFF
-		git pull
-		ynh_print_ON
+		git pull 2>&1
 		cd -
 	else
-		ynh_print_OFF
-		git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr
-		ynh_print_ON
+		git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr 2>&1
 	fi
 fi
 
