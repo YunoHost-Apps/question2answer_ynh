@@ -30,7 +30,7 @@ admin=$YNH_APP_ARG_ADMIN
 email=`ynh_user_get_info "$admin" 'mail'`
 is_public=$YNH_APP_ARG_IS_PUBLIC
 language=$YNH_APP_ARG_LANGUAGE
-q2a_name=${YNH_APP_ARG_Q2A_NAME// /%20}
+q2a_name=$YNH_APP_ARG_Q2A_NAME
 
 ### If it's a multi-instance app, meaning it can be installed several times independently
 ### The id of the app as stated in the manifest is available as $YNH_APP_ID
@@ -206,8 +206,8 @@ admin_temp_pass=$(ynh_string_random 10)
 ynh_local_curl "/index.php?qa=install" "create=Set+up+the+Database+including+User+Management"
 ynh_local_curl "/index.php?qa=install" "handle=$admin" "password=$admin_temp_pass" "email=$email" "super=Set+up+the+Super+Administrator"
 ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general"\
-	"option_site_title=$q2a_name"\
-	"option_site_url=https%3A%2F%2F$domain$path_url"\
+	`myynh_urlencode "option_site_title=$q2a_name"`\
+	`myynh_urlencode "option_site_url=https://$domain$path_url"`\
 	"option_neat_urls=0"\
 	"option_site_language=$language"\
 	"option_site_theme=SnowFlat"\

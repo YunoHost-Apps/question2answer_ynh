@@ -55,6 +55,21 @@ ynh_local_curl_csrf () {
     curl --silent --show-error --insecure --location --header "Host: $domain" --resolve $domain:443:127.0.0.1 $POST_data "$full_page_url" --cookie-jar $cookiefile --cookie $cookiefile
 }
 
+#Convert --data to --data-urlencode before ynh_local_curl
+myynh_urlencode() {
+    local data
+    if [[ $# != 1 ]]; then
+        echo "Usage: $0 string-to-urlencode"
+        return 1
+    fi
+    data="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "$1" "")"
+    if [[ $? != 3 ]]; then
+        echo "Unexpected error" 1>&2
+        return 2
+    fi
+    echo "${data##/?}"
+    return 0
+}
 
 #=================================================
 # FUTURE OFFICIAL HELPERS
