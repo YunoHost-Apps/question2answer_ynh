@@ -89,6 +89,11 @@ then
 	wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
 	unzip qa-ldap-login.zip -d $final_path/qa-plugin
 	mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
+
+	ynh_replace_string\
+		--match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
+		--replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
+		--target_file="$final_path/qa-include/pages/login.php"
 fi
 
 #=================================================
