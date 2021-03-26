@@ -78,6 +78,14 @@ ynh_abort_if_errors
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
+if grep 'qa-ldap-login' "$final_path/qa-include/pages/login.php"
+then
+	has_ldap=1
+else
+	has_ldap=0
+	ynh_print_warn "The LDAP plugin will be installed, but not configured, you'll have to do it in the Question2Answer admin"
+fi
+
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
 	ynh_script_progression --message="Upgrading source files..." --time --weight=1

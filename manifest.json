@@ -67,11 +67,6 @@
                 "name": "admin",
                 "type": "user",
                 "example": "johndoe"
-            },
-            {
-                "name": "password",
-                "type": "password",
-                "example": "Choose a password"
             }
         ]
     }
