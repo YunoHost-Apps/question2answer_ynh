@@ -34,7 +34,7 @@ This app can be configured via its admin panel, available at `https://mydomain/m
 
 #### Multi-user support
 
-This app supports multiuser, but is not integrated via LDAP nor SSO.
+This app supports multiuser and LDAP, but is not integrated via SSO.
 The admin page is protected by SSOwat.
 
 #### Supported architectures
