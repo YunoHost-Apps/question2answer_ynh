@@ -30,8 +30,7 @@ admin=$YNH_APP_ARG_ADMIN
 email=`ynh_user_get_info "$admin" 'mail'`
 is_public=$YNH_APP_ARG_IS_PUBLIC
 language=$YNH_APP_ARG_LANGUAGE
-password=$YNH_APP_ARG_PASSWORD
-q2a_name=${YNH_APP_ARG_Q2A_NAME// /%20}
+q2a_name=$YNH_APP_ARG_Q2A_NAME
 
 ### If it's a multi-instance app, meaning it can be installed several times independently
 ### The id of the app as stated in the manifest is available as $YNH_APP_ID
@@ -111,6 +110,21 @@ ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 ynh_setup_source --dest_dir="$final_path"
 
 #=================================================
+# DOWNLOAD AND UNPACK LDAP PLUGIN
+#=================================================
+ynh_script_progression --message="Setting up LDAP plugin..." --weight=3
+
+wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
+
+unzip qa-ldap-login.zip -d $final_path/qa-plugin
+mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
+
+ynh_replace_string\
+	--match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
+	--replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
+	--target_file="$final_path/qa-include/pages/login.php"
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Configuring NGINX web server..." --weight=14
@@ -146,9 +160,7 @@ ynh_script_progression --message="Installing Translations..." --weight=6
 ### French
 
 if [ $language == "fr" ]; then
-	ynh_print_OFF
-	git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr
-	ynh_print_ON
+	git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr 2>&1
 fi
 
 #=================================================
@@ -187,11 +199,13 @@ ynh_systemd_action --service_name=nginx --action=reload
 # Installation with curl
 ynh_script_progression --message="Finalizing installation..." --weight=4
 
+admin_temp_pass=$(ynh_string_random 10)
+
 ynh_local_curl "/index.php?qa=install" "create=Set+up+the+Database+including+User+Management"
-ynh_local_curl "/index.php?qa=install" "handle=$admin" "password=$password" "email=$email" "super=Set+up+the+Super+Administrator"
+ynh_local_curl "/index.php?qa=install" "handle=$admin" "password=$admin_temp_pass" "email=$email" "super=Set+up+the+Super+Administrator"
 ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general"\
-	"option_site_title=$q2a_name"\
-	"option_site_url=https%3A%2F%2F$domain$path_url"\
+	`myynh_urlencode "option_site_title=$q2a_name"`\
+	`myynh_urlencode "option_site_url=https://$domain$path_url"`\
 	"option_neat_urls=0"\
 	"option_site_language=$language"\
 	"option_site_theme=SnowFlat"\
@@ -201,6 +215,9 @@ ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general"\
 	"dosaveoptions=1"\
 	"has_js=0"
 
+ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="../conf/ldap.sql"
+ynh_replace_string --match_string="__ADMIN_EMAIL__" --replace_string="$email" --target_file="../conf/ldap.sql"
+mysql -u $db_user -p${db_pwd} $db_name < ../conf/ldap.sql
 
 # Remove the public access
 ynh_permission_update --permission="main" --remove="visitors"

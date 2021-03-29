@@ -78,12 +78,30 @@ ynh_abort_if_errors
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
+if grep 'qa-ldap-login' "$final_path/qa-include/pages/login.php"
+then
+	has_ldap=1
+else
+	has_ldap=0
+	ynh_print_warn "The LDAP plugin will be installed, but not configured, you'll have to do it in the Question2Answer admin"
+fi
+
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
 	ynh_script_progression --message="Upgrading source files..." --time --weight=1
 
 	# Download, check integrity, uncompress and patch the source from app.src
 	ynh_setup_source --dest_dir="$final_path"
+
+	# Setup LDAP
+	wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
+	unzip qa-ldap-login.zip -d $final_path/qa-plugin
+	mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
+
+	ynh_replace_string\
+		--match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
+		--replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
+		--target_file="$final_path/qa-include/pages/login.php"
 fi
 
 #=================================================
@@ -119,29 +137,12 @@ ynh_script_progression --message="Upgrading Translations..." --time --weight=1
 if [ $language == "fr" ]; then
 	if [ -e $final_path/qa-lang/fr ]; then
 		cd $final_path/qa-lang/fr
-		ynh_print_OFF
-		git pull
-		ynh_print_ON
+		git pull 2>&1
 		cd -
 	else
-		ynh_print_OFF
-		git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr
-		ynh_print_ON
+		git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr 2>&1
 	fi
 fi
-
-#=================================================
-# MODIFY A CONFIG FILE
-#=================================================
-
-### Verify the checksum of a file, stored by `ynh_store_file_checksum` in the install script.
-### And create a backup of this file if the checksum is different. So the file will be backed up if the admin had modified it.
-ynh_backup_if_checksum_is_different --file="$final_path/CONFIG_FILE"
-
-#ynh_replace_string --match_string="match_string" --replace_string="replace_string" --target_file="$final_path/CONFIG_FILE"
-
-# Recalculate and store the checksum of the file for the next upgrade.
-ynh_store_file_checksum --file="$final_path/CONFIG_FILE"
 
 #=================================================
 # GENERIC FINALIZATION
