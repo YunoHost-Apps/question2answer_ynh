@@ -6,7 +6,7 @@
         "en": "Platform for Question&Answer sites.",
         "fr": "Plateforme de Question/Réponses."
     },
-    "version": "1.8.5~ynh2",
+    "version": "1.8.5~ynh3",
     "url": "https://www.question2answer.org/",
     "license": "GPL-2.0-or-later",
     "maintainer": {
