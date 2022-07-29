@@ -18,45 +18,17 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
+language=$(ynh_app_setting_get --app=$app --key=language)
 admin=$(ynh_app_setting_get --app=$app --key=admin)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-language=$(ynh_app_setting_get --app=$app --key=language)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
 # CHECK VERSION
 #=================================================
+ynh_script_progression --message="Checking version..."
 
-### This helper will compare the version of the currently installed app and the version of the upstream package.
-### $upgrade_type can have 2 different values
-### - UPGRADE_APP if the upstream app version has changed
-### - UPGRADE_PACKAGE if only the YunoHost package has changed
-### ynh_check_app_version_changed will stop the upgrade if the app is up to date.
-### UPGRADE_APP should be used to upgrade the core app only if there's an upgrade to do.
 upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# ENSURE DOWNWARD COMPATIBILITY
-#=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
-
-#
-# N.B. : the followings setting migrations snippets are provided as *EXAMPLES*
-# of what you may want to do in some cases (e.g. a setting was not defined on
-# some legacy installs and you therefore want to initiaze stuff during upgrade)
-#
-
-# If db_name doesn't exist, create it
-#if [ -z "$db_name" ]; then
-#	db_name=$(ynh_sanitize_dbid --db_name=$app)
-#	ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-#fi
-
-# If final_path doesn't exist, create it
-#if [ -z "$final_path" ]; then
-#	final_path=/var/www/$app
-#	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
-#fi
 
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
@@ -74,6 +46,19 @@ ynh_abort_if_errors
 
 #=================================================
 # STANDARD UPGRADE STEPS
+#=================================================
+# ENSURE DOWNWARD COMPATIBILITY
+#=================================================
+ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
+
+#=================================================
+# CREATE DEDICATED USER
+#=================================================
+ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
+
+# Create a dedicated user (if not existing)
+ynh_system_user_create --username=$app --home_dir="$final_path"
+
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
@@ -104,21 +89,9 @@ then
 		--target_file="$final_path/qa-include/pages/login.php"
 fi
 
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --time --weight=1
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
-
-# Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -128,6 +101,16 @@ ynh_script_progression --message="Upgrading PHP-FPM configuration..." --time --w
 # Create a dedicated PHP-FPM config
 ynh_add_fpm_config
 
+#=================================================
+# NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --time --weight=1
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
+
+#=================================================
+# SPECIFIC UPGRADE
 #=================================================
 # UPGRADE TRANSLATIONS
 #=================================================
@@ -144,18 +127,12 @@ if [ $language == "fr" ]; then
 	fi
 fi
 
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+chown -R $app:www-data "$final_path"
+
 #=================================================
 # GENERIC FINALIZATION
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
-
-# Set permissions on app files
-chown -R root: $final_path
-
-chmod o-rwx $final_path
-chown $app:www-data $final_path
-
 #=================================================
 # RELOAD NGINX
 #=================================================
