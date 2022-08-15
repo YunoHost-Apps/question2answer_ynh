@@ -20,6 +20,7 @@ Question2Answer (Q2A) is a popular open source Q&A platform for PHP/MySQL.
 
 **Shipped version:** 1.8.6~ynh2
 
+
 **Demo:** http://demo.question2answer.org
 
 ## Screenshots
