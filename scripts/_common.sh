@@ -43,7 +43,7 @@ ynh_local_curl_csrf () {
     
     local cookiefile=/tmp/ynh-$app-cookie.txt
     touch $cookiefile
-    chown root $cookiefile
+    chown $app $cookiefile
     chmod 700 $cookiefile
 
     # Curl the URL for the CSRF token
