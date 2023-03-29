@@ -21,7 +21,7 @@
         "email": "nils.van-zuijlen@mailo.com"
     },
     "requirements": {
-        "yunohost": ">= 4.3.0"
+        "yunohost": ">= 11.1.15"
     },
     "multi_instance": true,
     "services": [
