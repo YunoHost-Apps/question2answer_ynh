@@ -76,7 +76,7 @@ ram.runtime = "50M"
     admin.allowed= "admins"
 
     [resources.apt]
-    packages = "mariadb-server"
+    packages = "mariadb-server php8.0-fpm"
 
     [resources.database]
     type = "mysql"
