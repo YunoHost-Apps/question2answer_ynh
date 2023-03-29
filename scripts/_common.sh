@@ -17,9 +17,9 @@ ldap_login_commit=857ad8bf3ca891cb33fa6e8816ed0d3e198c1afc
 ynh_local_curl_csrf () {
     # Define url of page to curl
     local local_page=$1
-    local full_path=$path_url$local_page
+    local full_path=$path$local_page
 
-    if [ "${path_url}" == "/" ]; then
+    if [ "${path}" == "/" ]; then
         full_path=$local_page
     fi
 
