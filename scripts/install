@@ -73,6 +73,9 @@ ynh_add_config --template="../conf/qa-config.php" --destination="$install_dir/qa
 chmod 400 "$install_dir/qa-config.php"
 chown $app:$app "$install_dir/qa-config.php"
 
+# Calculate and store the config file checksum into the app settings
+ynh_store_file_checksum --file="$install_dir/qa-config.php"
+
 #=================================================
 # SETUP APPLICATION WITH CURL
 #=================================================
@@ -101,12 +104,9 @@ ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general"\
 	"has_js=0"
 
 ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="../conf/ldap.sql"
-ynh_replace_string --match_string="__ADMIN_EMAIL__" --replace_string="$email" --target_file="../conf/ldap.sql"
-mysql -u $db_user -p${db_pwd} $db_name < ../conf/ldap.sql
+ynh_replace_string --match_string="__EMAIL__" --replace_string="$email" --target_file="../conf/ldap.sql"
 
-# Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$install_dir/qa-config.php"
-ynh_store_file_checksum --file="$install_dir/.htaccess"
+ynh_mysql_connect_as --user="$db_user" --password="$db_pwd" < ../conf/ldap.sql
 
 #=================================================
 # SECURE FILES AND DIRECTORIES

@@ -27,6 +27,6 @@ INSERT INTO `qa_options` (`title`, `content`) VALUES
 
 UPDATE `qa_users` SET `sessionsource` = 'ldap';
 INSERT INTO `qa_userlogins` (`userid`, `source`, `identifier`, `identifiermd5`) VALUES
-((SELECT userid FROM `qa_users` WHERE `handle` = '__ADMIN__'), 'ldap', '__ADMIN_EMAIL__', UNHEX(MD5('__ADMIN_EMAIL__')));
+((SELECT userid FROM `qa_users` WHERE `handle` = '__ADMIN__'), 'ldap', '__EMAIL__', UNHEX(MD5('__EMAIL__')));
 
 COMMIT;
