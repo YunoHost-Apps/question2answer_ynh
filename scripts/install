@@ -10,81 +10,23 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-#REMOVEME? ynh_clean_setup () {
-	true
-}
-# Exit if an error occurs during the execution of the script
-#REMOVEME? ynh_abort_if_errors
-
-#=================================================
 # RETRIEVE ARGUMENTS FROM THE MANIFEST
 #=================================================
 
-#REMOVEME? domain=$YNH_APP_ARG_DOMAIN
-#REMOVEME? path=$YNH_APP_ARG_PATH
-#REMOVEME? is_public=$YNH_APP_ARG_IS_PUBLIC
-#REMOVEME? language=$YNH_APP_ARG_LANGUAGE
-#REMOVEME? admin=$YNH_APP_ARG_ADMIN
-#REMOVEME? q2a_name=$YNH_APP_ARG_Q2A_NAME
-
-#REMOVEME? app=$YNH_APP_INSTANCE_NAME
-
 email=$(ynh_user_get_info --username=$admin --key=mail)
-
-#=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
-#=================================================
-#REMOVEME? ynh_script_progression --message="Validating installation parameters..." --weight=2
-
-#REMOVEME? install_dir=/var/www/$app
-#REMOVEME? test ! -e "$install_dir" || ynh_die --message="This path already contains a folder"
-
-# Register (book) web path
-#REMOVEME? ynh_webpath_register --app=$app --domain=$domain --path=$path
-
-#=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-#REMOVEME? ynh_script_progression --message="Storing installation settings..." --weight=3
-
-#REMOVEME? ynh_app_setting_set --app=$app --key=domain --value=$domain
-#REMOVEME? ynh_app_setting_set --app=$app --key=path --value=$path
-ynh_app_setting_set --app=$app --key=language --value=$language
-#REMOVEME? ynh_app_setting_set --app=$app --key=admin --value=$admin
-
-#=================================================
-# STANDARD MODIFICATIONS
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-#REMOVEME? ynh_script_progression --message="Configuring system user..." --weight=5
-
-# Create a system user
-#REMOVEME? ynh_system_user_create --username=$app --home_dir="$install_dir"
-
-#=================================================
-# CREATE A MYSQL DATABASE
-#=================================================
-#REMOVEME? ynh_script_progression --message="Creating a MySQL database..." --weight=3
-
-#REMOVEME? db_name=$(ynh_sanitize_dbid --db_name=$app)
-#REMOVEME? db_user=$db_name
-#REMOVEME? ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-#REMOVEME? ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=3
 
-#REMOVEME? ynh_app_setting_set --app=$app --key=install_dir --value=$install_dir
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
 
-chmod 750 "$install_dir"
+if [ $language == "fr" ]; then
+	ynh_setup_source --dest_dir="$install_dir/qa-lang/fr" --source_id="ldap"
+fi
+
 chmod -R o-rwx "$install_dir"
 chown -R $app:www-data "$install_dir"
 
@@ -94,7 +36,7 @@ chown -R $app:www-data "$install_dir"
 ynh_script_progression --message="Configuring PHP-FPM..." --weight=1
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config
+ynh_add_fpm_config --usage=low --footprint=low
 
 #=================================================
 # NGINX CONFIGURATION
@@ -122,27 +64,14 @@ ynh_replace_string\
 	--target_file="$install_dir/qa-include/pages/login.php"
 
 #=================================================
-# DOWNLOAD TRANSLATIONS
-#=================================================
-ynh_script_progression --message="Installing Translations..." --weight=6
-
-### French
-
-if [ $language == "fr" ]; then
-	git clone https://github.com/mrflos/q2a-lang-fr $install_dir/qa-lang/fr 2>&1
-fi
-
-#=================================================
 # ADD A CONFIGURATION
 #=================================================
 ynh_script_progression --message="Adding a configuration file..."
 
-mv $install_dir/qa-config-example.php $install_dir/qa-config.php
-mv $install_dir/.htaccess-example $install_dir/.htaccess
+ynh_add_config --template="../conf/qa-config.php" --destination="$install_dir/qa-config.php"
 
-ynh_replace_string --match_string="your-mysql-username" --replace_string=$db_user --target_file="$install_dir/qa-config.php"
-ynh_replace_string --match_string="your-mysql-password" --replace_string=$db_pwd --target_file="$install_dir/qa-config.php"
-ynh_replace_string --match_string="your-mysql-db-name" --replace_string=$db_name --target_file="$install_dir/qa-config.php"
+chmod 400 "$install_dir/qa-config.php"
+chown $app:$app "$install_dir/qa-config.php"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
@@ -151,8 +80,6 @@ ynh_script_progression --message="Setuping application with CURL..."
 
 # Set the app as temporarily public for curl call
 ynh_script_progression --message="Configuring SSOwat..." --weight=4
-# Making the app public for curl
-#REMOVEME? ynh_permission_update --permission="main" --add="visitors"
 
 # Installation with curl
 ynh_script_progression --message="Finalizing installation..." --weight=4
@@ -177,9 +104,6 @@ ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target
 ynh_replace_string --match_string="__ADMIN_EMAIL__" --replace_string="$email" --target_file="../conf/ldap.sql"
 mysql -u $db_user -p${db_pwd} $db_name < ../conf/ldap.sql
 
-# Remove the public access
-#REMOVEME? ynh_permission_update --permission="main" --remove="visitors"
-
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum --file="$install_dir/qa-config.php"
 ynh_store_file_checksum --file="$install_dir/.htaccess"
@@ -195,32 +119,7 @@ chmod o-rwx $install_dir
 chown $app:www-data $install_dir
 
 # Remove database initialization file
-#REMOVEME? ynh_secure_remove --file="$install_dir/qa-include/qa-install.php"
-
-#=================================================
-# GENERIC FINALIZATION
-#=================================================
-# SETUP SSOWAT
-#=================================================
-#REMOVEME? ynh_script_progression --message="Configuring permissions..." --weight=2
-
-# Make app public if necessary
-#REMOVEME? if [ $is_public -eq 1 ]
-then
-	# Everyone can access the app.
-	# The "main" permission is automatically created before the install script.
-#REMOVEME? 	ynh_permission_update --permission="main" --add="visitors"
-fi
-
-# Only the admin can access the admin panel of the app (if the app has an admin panel)
-#REMOVEME? ynh_permission_create --permission="admin" --url="/index.php/admin" --allowed=$admin
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-#REMOVEME? ynh_script_progression --message="Reloading NGINX web server..." --weight=5
-
-#REMOVEME? ynh_systemd_action --service_name=nginx --action=reload
+ynh_secure_remove --file="$install_dir/qa-include/qa-install.php"
 
 #=================================================
 # END OF SCRIPT
