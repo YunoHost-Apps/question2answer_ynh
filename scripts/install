@@ -106,7 +106,7 @@ ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general"\
 ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="../conf/ldap.sql"
 ynh_replace_string --match_string="__EMAIL__" --replace_string="$email" --target_file="../conf/ldap.sql"
 
-ynh_mysql_connect_as --user="$db_user" --password="$db_pwd" < ../conf/ldap.sql
+ynh_mysql_connect_as --database="$db_name" --user="$db_user" --password="$db_pwd" < ../conf/ldap.sql
 
 #=================================================
 # SECURE FILES AND DIRECTORIES
