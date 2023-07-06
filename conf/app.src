@@ -1,5 +1,5 @@
-SOURCE_URL=https://github.com/q2a/question2answer/releases/download/v1.8.6/question2answer-1.8.6.zip
-SOURCE_SUM=9200234584f576ff6b651baa9cfa08795cfda6c303d855a1bf9df6183f25b2a9
+SOURCE_URL=https://github.com/q2a/question2answer/releases/download/v1.8.7/question2answer-1.8.7.zip
+SOURCE_SUM=d52fd9057b361d5569232c8f90f4cbb087a9a18757dd5f551c3ad5c25bdce02a
 SOURCE_SUM_PRG=sha256sum
 SOURCE_FORMAT=zip
 SOURCE_IN_SUBDIR=true
