@@ -29,7 +29,7 @@ fi
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	ynh_script_progression --message="Upgrading source files..." --time --weight=1
+	ynh_script_progression --message="Upgrading source files..." --weight=1
 
 	# Download, check integrity, uncompress and patch the source from app.src
 	ynh_setup_source --dest_dir="$install_dir"
@@ -52,15 +52,10 @@ chown -R $app:www-data "$install_dir"
 #=================================================
 # PHP-FPM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading PHP-FPM configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading PHP-FPM configuration..." --weight=1
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config --usage=low --footprint=low
-
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --time --weight=1
+ynh_add_fpm_config
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
@@ -70,7 +65,7 @@ ynh_add_nginx_config
 #=================================================
 # UPGRADE TRANSLATIONS
 #=================================================
-ynh_script_progression --message="Upgrading Translations..." --time --weight=1
+ynh_script_progression --message="Upgrading Translations..." --weight=1
 
 if [ $language == "fr" ]; then
 	ynh_setup_source --dest_dir="$install_dir/qa-lang/fr" --source_id="ldap"
@@ -84,4 +79,4 @@ chown -R $app:www-data "$install_dir"
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --time --last
+ynh_script_progression --message="Upgrade of $app completed" --last

@@ -2,8 +2,8 @@ packaging_format = 2
 
 id = "question2answer"
 name = "Question2Answer"
-description.en = "Platform for Question&Answer sites."
-description.fr = "Plateforme de Question/Réponses."
+description.en = "Platform for Question&Answer sites"
+description.fr = "Plateforme de Question/Réponses"
 
 version = "1.8.6~ynh2"
 
@@ -17,7 +17,7 @@ admindoc = "https://docs.question2answer.org"
 code = "https://github.com/q2a/question2answer"
 
 [integration]
-yunohost = ">= 11.1.19"
+yunohost = ">= 11.2"
 architectures = "all"
 multi_instance = true
 ldap = true
@@ -41,7 +41,7 @@ ram.runtime = "50M"
     [install.language]
     ask.en = "Choose the application language"
     ask.fr = "Choisissez la langue de l'application"
-    type = "string"
+    type = "select"
     choices = ["fr", "en"]
     default = "fr"
 
@@ -76,7 +76,7 @@ ram.runtime = "50M"
     admin.allowed= "admins"
 
     [resources.apt]
-    packages = "mariadb-server php8.0-fpm"
+    packages = "mariadb-server, php8.2-fpm"
 
     [resources.database]
     type = "mysql"
