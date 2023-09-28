@@ -5,7 +5,7 @@ name = "Question2Answer"
 description.en = "Platform for Question&Answer sites"
 description.fr = "Plateforme de Question/Réponses"
 
-version = "1.8.6~ynh2"
+version = "1.8.8~ynh1"
 
 maintainers = ["Nils Van Zuijlen"]
 
@@ -56,8 +56,8 @@ ram.runtime = "50M"
 
 [resources]
         [resources.sources.main]
-        url = "https://github.com/q2a/question2answer/releases/download/v1.8.6/question2answer-1.8.6.zip"
-        sha256 = "9200234584f576ff6b651baa9cfa08795cfda6c303d855a1bf9df6183f25b2a9"
+        url = "https://github.com/q2a/question2answer/releases/download/v1.8.8/question2answer-1.8.8.zip"
+        sha256 = "1456ef9ebd4e8029e43e819be158a69f73c919ca38350f230fece1a6907ec4d2"
         autoupdate.strategy = "latest_github_tag"
 
         [resources.sources.ldap]
