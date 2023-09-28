@@ -24,7 +24,7 @@ ynh_script_progression --message="Setting up source files..." --weight=3
 ynh_setup_source --dest_dir="$install_dir"
 
 if [ $language == "fr" ]; then
-	ynh_setup_source --dest_dir="$install_dir/qa-lang/fr" --source_id="fr"
+	ynh_setup_source --dest_dir="$install_dir/qa-lang/fr" --source_id="ldap"
 fi
 
 chmod -R o-rwx "$install_dir"
