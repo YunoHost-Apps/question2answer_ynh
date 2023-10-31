@@ -5,7 +5,8 @@ It shall NOT be edited by hand.
 
 # Question2Answer for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/question2answer.svg)](https://dash.yunohost.org/appci/app/question2answer) ![Working status](https://ci-apps.yunohost.org/ci/badges/question2answer.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/question2answer.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/question2answer.svg)](https://dash.yunohost.org/appci/app/question2answer) ![Working status](https://ci-apps.yunohost.org/ci/badges/question2answer.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/question2answer.maintain.svg)
+
 [![Install Question2Answer with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=question2answer)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -19,7 +20,6 @@ Question2Answer (Q2A) is a popular open source Q&A platform for PHP/MySQL.
 
 
 **Shipped version:** 1.8.6~ynh2
-
 
 **Demo:** http://demo.question2answer.org
 
@@ -39,7 +39,7 @@ This app can be configured via its admin panel, available at `https://mydomain/m
 * Official app website: <https://www.question2answer.org>
 * Official admin documentation: <https://docs.question2answer.org>
 * Upstream app code repository: <https://github.com/q2a/question2answer>
-* YunoHost documentation for this app: <https://yunohost.org/app_question2answer>
+* YunoHost Store: <https://apps.yunohost.org/app/question2answer>
 * Report a bug: <https://github.com/YunoHost-Apps/question2answer_ynh/issues>
 
 ## Developer info
