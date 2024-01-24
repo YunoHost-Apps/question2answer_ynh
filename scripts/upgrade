@@ -10,84 +10,36 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# LOAD SETTINGS
-#=================================================
-#REMOVEME? ynh_script_progression --message="Loading installation settings..." --time --weight=1
-
-#REMOVEME? app=$YNH_APP_INSTANCE_NAME
-
-#REMOVEME? domain=$(ynh_app_setting_get --app=$app --key=domain)
-#REMOVEME? path=$(ynh_app_setting_get --app=$app --key=path)
-#REMOVEME? language=$(ynh_app_setting_get --app=$app --key=language)
-#REMOVEME? admin=$(ynh_app_setting_get --app=$app --key=admin)
-#REMOVEME? #REMOVEME? install_dir=$(ynh_app_setting_get --app=$app --key=install_dir)
-#REMOVEME? db_name=$(ynh_app_setting_get --app=$app --key=db_name)
-
-#=================================================
-# CHECK VERSION
-#=================================================
-ynh_script_progression --message="Checking version..."
-
-upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-#REMOVEME? ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
-
-# Backup the current version of the app
-#REMOVEME? ynh_backup_before_upgrade
-#REMOVEME? ynh_clean_setup () {
-	# Restore it if the upgrade fails
-#REMOVEME? 	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-#REMOVEME? ynh_abort_if_errors
-
-#=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
 
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-#REMOVEME? ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
-
-# Create a dedicated user (if not existing)
-#REMOVEME? ynh_system_user_create --username=$app --home_dir="$install_dir"
+if grep 'qa-ldap-login' "$install_dir/qa-include/pages/login.php"; then
+    has_ldap=1
+else
+    has_ldap=0
+    ynh_print_warn "The LDAP plugin will be installed, but not configured, you'll have to do it in the Question2Answer admin"
+fi
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
+ynh_script_progression --message="Upgrading source files..." --time --weight=1
 
-if grep 'qa-ldap-login' "$install_dir/qa-include/pages/login.php"
-then
-	has_ldap=1
-else
-	has_ldap=0
-	ynh_print_warn "The LDAP plugin will be installed, but not configured, you'll have to do it in the Question2Answer admin"
-fi
+# Download, check integrity, uncompress and patch the source from app.src
+ynh_setup_source --dest_dir="$install_dir" --full_replace=1 --keep="qa-config.php"
 
-if [ "$upgrade_type" == "UPGRADE_APP" ]
-then
-	ynh_script_progression --message="Upgrading source files..." --time --weight=1
+# Setup LDAP
+wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
+unzip qa-ldap-login.zip -d $install_dir/qa-plugin
+mv $install_dir/qa-plugin/qa-ldap-login-$ldap_login_commit $install_dir/qa-plugin/qa-ldap-login
 
-	# Download, check integrity, uncompress and patch the source from app.src
-	ynh_setup_source --dest_dir="$install_dir"
-
-	# Setup LDAP
-	wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
-	unzip qa-ldap-login.zip -d $install_dir/qa-plugin
-	mv $install_dir/qa-plugin/qa-ldap-login-$ldap_login_commit $install_dir/qa-plugin/qa-ldap-login
-
-	ynh_replace_string\
-		--match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
-		--replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
-		--target_file="$install_dir/qa-include/pages/login.php"
-fi
+ynh_replace_string\
+    --match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
+    --replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
+    --target_file="$install_dir/qa-include/pages/login.php"
 
 chmod 750 "$install_dir"
 chmod -R o-rwx "$install_dir"
