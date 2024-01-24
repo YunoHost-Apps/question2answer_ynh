@@ -27,13 +27,6 @@ Question2Answer (Q2A) est une plateforme de Questions/Réponses pour PHP/MySQL.
 
 ![Capture d’écran de Question2Answer](./doc/screenshots/install_screenshot.png)
 
-## Avertissements / informations importantes
-
-## Configuration
-
-Cette application se configure via son interface administrateur, accessible sur `https://mondomaine/monquestion2answer/index.php/admin/`
-
-
 ## Documentations et ressources
 
 * Site officiel de l’app : <https://www.question2answer.org>
