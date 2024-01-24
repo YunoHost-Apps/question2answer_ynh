@@ -10,217 +10,91 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
+# INITIALIZE AND STORE SETTINGS
 #=================================================
 
-ynh_clean_setup () {
-	true
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
-# RETRIEVE ARGUMENTS FROM THE MANIFEST
-#=================================================
-
-domain=$YNH_APP_ARG_DOMAIN
-path_url=$YNH_APP_ARG_PATH
-is_public=$YNH_APP_ARG_IS_PUBLIC
-language=$YNH_APP_ARG_LANGUAGE
-admin=$YNH_APP_ARG_ADMIN
-q2a_name=$YNH_APP_ARG_Q2A_NAME
-
-app=$YNH_APP_INSTANCE_NAME
-
-email=$(ynh_user_get_info --username=$admin --key=mail)
-
-#=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
-#=================================================
-ynh_script_progression --message="Validating installation parameters..." --weight=2
-
-final_path=/var/www/$app
-test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
-
-# Register (book) web path
-ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
-
-#=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=3
-
-ynh_app_setting_set --app=$app --key=domain --value=$domain
-ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=language --value=$language
-ynh_app_setting_set --app=$app --key=admin --value=$admin
-
-#=================================================
-# STANDARD MODIFICATIONS
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=5
-
-# Create a system user
-ynh_system_user_create --username=$app --home_dir="$final_path"
-
-#=================================================
-# CREATE A MYSQL DATABASE
-#=================================================
-ynh_script_progression --message="Creating a MySQL database..." --weight=3
-
-db_name=$(ynh_sanitize_dbid --db_name=$app)
-db_user=$db_name
-ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name
+admin_email=$(ynh_user_get_info --username="$admin" --key=mail)
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=3
 
-ynh_app_setting_set --app=$app --key=final_path --value=$final_path
 # Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source --dest_dir="$final_path"
+ynh_setup_source --dest_dir="$install_dir"
+ynh_exec_warn ls -lah "$install_dir"
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
-chown -R $app:www-data "$final_path"
+ynh_setup_source --source_id="ldap" --dest_dir="$install_dir/qa-plugin/qa-ldap-login"
+ynh_exec_warn ls -lah "$install_dir/qa-plugin"
 
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring PHP-FPM..." --weight=1
+ynh_replace_string \
+    --target_file="$install_dir/qa-include/pages/login.php" \
+    --match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';" \
+    --replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"
 
-# Create a dedicated PHP-FPM config
-ynh_add_fpm_config
 
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=14
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
-
-#=================================================
-# SPECIFIC SETUP
-#=================================================
-# DOWNLOAD AND UNPACK LDAP PLUGIN
-#=================================================
-ynh_script_progression --message="Setting up LDAP plugin..." --weight=3
-
-wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
-
-unzip qa-ldap-login.zip -d $final_path/qa-plugin
-mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
-
-ynh_replace_string\
-	--match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
-	--replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
-	--target_file="$final_path/qa-include/pages/login.php"
-
-#=================================================
-# DOWNLOAD TRANSLATIONS
-#=================================================
-ynh_script_progression --message="Installing Translations..." --weight=6
-
-### French
-
-if [ $language == "fr" ]; then
-	git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr 2>&1
+if [ "$language" == "fr" ]; then
+    ynh_setup_source --source_id="lang_fr" --dest_dir="$install_dir/qa-lang/fr"
 fi
+
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R "$app:www-data" "$install_dir"
 
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
 ynh_script_progression --message="Adding a configuration file..."
 
-mv $final_path/qa-config-example.php $final_path/qa-config.php
-mv $final_path/.htaccess-example $final_path/.htaccess
+mv "$install_dir/qa-config-example.php" "$install_dir/qa-config.php"
 
-ynh_replace_string --match_string="your-mysql-username" --replace_string=$db_user --target_file="$final_path/qa-config.php"
-ynh_replace_string --match_string="your-mysql-password" --replace_string=$db_pwd --target_file="$final_path/qa-config.php"
-ynh_replace_string --match_string="your-mysql-db-name" --replace_string=$db_name --target_file="$final_path/qa-config.php"
+ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-username" --replace_string="$db_user"
+ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-password" --replace_string="$db_pwd"
+ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-db-name" --replace_string="$db_name"
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+
+# Create a dedicated PHP-FPM config
+ynh_add_fpm_config
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
 
 #=================================================
 # SETUP APPLICATION WITH CURL
 #=================================================
-ynh_script_progression --message="Setuping application with CURL..."
-
-# Set the app as temporarily public for curl call
-ynh_script_progression --message="Configuring SSOwat..." --weight=4
-# Making the app public for curl
-ynh_permission_update --permission="main" --add="visitors"
-
-# Installation with curl
 ynh_script_progression --message="Finalizing installation..." --weight=4
 
 admin_temp_pass=$(ynh_string_random --length=10)
 
 ynh_local_curl "/index.php?qa=install" "create=Set+up+the+Database+including+User+Management"
-ynh_local_curl "/index.php?qa=install" "handle=$admin" "password=$admin_temp_pass" "email=$email" "super=Set+up+the+Super+Administrator"
-ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general"\
-	`myynh_urlencode "option_site_title=$q2a_name"`\
-	`myynh_urlencode "option_site_url=https://$domain$path_url"`\
-	"option_neat_urls=0"\
-	"option_site_language=$language"\
-	"option_site_theme=SnowFlat"\
-	"option_site_theme_mobile=SnowFlat"\
-	"option_site_text_direction=ltr"\
-	"option_tags_or_categories=tc"\
-	"dosaveoptions=1"\
-	"has_js=0"
+ynh_local_curl "/index.php?qa=install" "handle=$admin" "password=$admin_temp_pass" "email=$admin_email" "super=Set+up+the+Super+Administrator"
+ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general" \
+    "$(myynh_urlencode "option_site_title=$q2a_name")" \
+    "$(myynh_urlencode "option_site_url=https://$domain$path")" \
+    "option_neat_urls=0" \
+    "option_site_language=$language" \
+    "option_site_theme=SnowFlat" \
+    "option_site_theme_mobile=SnowFlat" \
+    "option_site_text_direction=ltr" \
+    "option_tags_or_categories=tc" \
+    "dosaveoptions=1" \
+    "has_js=0"
 
-ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="../conf/ldap.sql"
-ynh_replace_string --match_string="__ADMIN_EMAIL__" --replace_string="$email" --target_file="../conf/ldap.sql"
-mysql -u $db_user -p${db_pwd} $db_name < ../conf/ldap.sql
-
-# Remove the public access
-ynh_permission_update --permission="main" --remove="visitors"
+ynh_add_config --template="ldap.sql" --destination="$install_dir/ldap.sql"
+ynh_mysql_execute_file_as_root --database="$db_name" --file="$install_dir/ldap.sql"
+ynh_secure_remove --file="$install_dir/ldap.sql"
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$final_path/qa-config.php"
-ynh_store_file_checksum --file="$final_path/.htaccess"
-
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
+ynh_store_file_checksum --file="$install_dir/qa-config.php"
 
 # Set permissions to app files
-chown -R $app: $final_path
-
-chmod o-rwx $final_path
-chown $app:www-data $final_path
-
-# Remove database initialization file
-ynh_secure_remove --file="$final_path/qa-include/qa-install.php"
-
-#=================================================
-# GENERIC FINALIZATION
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring permissions..." --weight=2
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# Everyone can access the app.
-	# The "main" permission is automatically created before the install script.
-	ynh_permission_update --permission="main" --add="visitors"
-fi
-
-# Only the admin can access the admin panel of the app (if the app has an admin panel)
-ynh_permission_create --permission="admin" --url="/index.php/admin" --allowed=$admin
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=5
-
-ynh_systemd_action --service_name=nginx --action=reload
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R "$app:www-data" "$install_dir"
 
 #=================================================
 # END OF SCRIPT

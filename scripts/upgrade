@@ -12,16 +12,16 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+#REMOVEME? ynh_script_progression --message="Loading installation settings..." --time --weight=1
 
-app=$YNH_APP_INSTANCE_NAME
+#REMOVEME? app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-path_url=$(ynh_app_setting_get --app=$app --key=path)
-language=$(ynh_app_setting_get --app=$app --key=language)
-admin=$(ynh_app_setting_get --app=$app --key=admin)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+#REMOVEME? domain=$(ynh_app_setting_get --app=$app --key=domain)
+#REMOVEME? path=$(ynh_app_setting_get --app=$app --key=path)
+#REMOVEME? language=$(ynh_app_setting_get --app=$app --key=language)
+#REMOVEME? admin=$(ynh_app_setting_get --app=$app --key=admin)
+#REMOVEME? #REMOVEME? install_dir=$(ynh_app_setting_get --app=$app --key=install_dir)
+#REMOVEME? db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
 # CHECK VERSION
@@ -33,16 +33,16 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
+#REMOVEME? ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
 
 # Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
+#REMOVEME? ynh_backup_before_upgrade
+#REMOVEME? ynh_clean_setup () {
 	# Restore it if the upgrade fails
-	ynh_restore_upgradebackup
+#REMOVEME? 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
+#REMOVEME? ynh_abort_if_errors
 
 #=================================================
 # STANDARD UPGRADE STEPS
@@ -54,16 +54,16 @@ ynh_script_progression --message="Ensuring downward compatibility..." --time --w
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
+#REMOVEME? ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
 
 # Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app --home_dir="$final_path"
+#REMOVEME? ynh_system_user_create --username=$app --home_dir="$install_dir"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
-if grep 'qa-ldap-login' "$final_path/qa-include/pages/login.php"
+if grep 'qa-ldap-login' "$install_dir/qa-include/pages/login.php"
 then
 	has_ldap=1
 else
@@ -76,22 +76,22 @@ then
 	ynh_script_progression --message="Upgrading source files..." --time --weight=1
 
 	# Download, check integrity, uncompress and patch the source from app.src
-	ynh_setup_source --dest_dir="$final_path"
+	ynh_setup_source --dest_dir="$install_dir"
 
 	# Setup LDAP
 	wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
-	unzip qa-ldap-login.zip -d $final_path/qa-plugin
-	mv $final_path/qa-plugin/qa-ldap-login-$ldap_login_commit $final_path/qa-plugin/qa-ldap-login
+	unzip qa-ldap-login.zip -d $install_dir/qa-plugin
+	mv $install_dir/qa-plugin/qa-ldap-login-$ldap_login_commit $install_dir/qa-plugin/qa-ldap-login
 
 	ynh_replace_string\
 		--match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
 		--replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
-		--target_file="$final_path/qa-include/pages/login.php"
+		--target_file="$install_dir/qa-include/pages/login.php"
 fi
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
-chown -R $app:www-data "$final_path"
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R $app:www-data "$install_dir"
 
 #=================================================
 # PHP-FPM CONFIGURATION
@@ -118,27 +118,27 @@ ynh_script_progression --message="Upgrading Translations..." --time --weight=1
 
 ### French
 if [ $language == "fr" ]; then
-	if [ -e $final_path/qa-lang/fr ]; then
-		cd $final_path/qa-lang/fr
+	if [ -e $install_dir/qa-lang/fr ]; then
+		cd $install_dir/qa-lang/fr
 		git pull 2>&1
 		cd -
 	else
-		git clone https://github.com/mrflos/q2a-lang-fr $final_path/qa-lang/fr 2>&1
+		git clone https://github.com/mrflos/q2a-lang-fr $install_dir/qa-lang/fr 2>&1
 	fi
 fi
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
-chown -R $app:www-data "$final_path"
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R $app:www-data "$install_dir"
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --time --weight=1
+#REMOVEME? ynh_script_progression --message="Reloading NGINX web server..." --time --weight=1
 
-ynh_systemd_action --service_name=nginx --action=reload
+#REMOVEME? ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT

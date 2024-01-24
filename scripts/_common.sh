@@ -4,8 +4,6 @@
 # COMMON VARIABLES
 #=================================================
 
-ldap_login_commit=857ad8bf3ca891cb33fa6e8816ed0d3e198c1afc
-
 #=================================================
 # PERSONAL HELPERS
 #=================================================
@@ -17,9 +15,9 @@ ldap_login_commit=857ad8bf3ca891cb33fa6e8816ed0d3e198c1afc
 ynh_local_curl_csrf () {
     # Define url of page to curl
     local local_page=$1
-    local full_path=$path_url$local_page
+    local full_path=$path$local_page
 
-    if [ "${path_url}" == "/" ]; then
+    if [ "${path}" == "/" ]; then
         full_path=$local_page
     fi
 
@@ -40,7 +38,7 @@ ynh_local_curl_csrf () {
 
     # Wait untils nginx has fully reloaded (avoid curl fail with http2)
     sleep 2
-    
+
     local cookiefile=/tmp/ynh-$app-cookie.txt
     touch $cookiefile
     chown $app $cookiefile
@@ -51,7 +49,7 @@ ynh_local_curl_csrf () {
 
     local code=${code_line:40:53}
 	POST_data="${POST_data}&code=${code}"
-    
+
     curl --silent --show-error --insecure --location --header "Host: $domain" --resolve $domain:443:127.0.0.1 $POST_data "$full_page_url" --cookie-jar $cookiefile --cookie $cookiefile
 }
 
