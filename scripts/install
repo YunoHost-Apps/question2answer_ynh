@@ -68,7 +68,7 @@ admin_temp_pass=$(ynh_string_random --length=10)
 
 ynh_local_curl "/index.php?qa=install" "create=Set+up+the+Database+including+User+Management"
 ynh_local_curl "/index.php?qa=install" "handle=$admin" "password=$admin_temp_pass" "email=$admin_email" "super=Set+up+the+Super+Administrator"
-ynh_local_curl "/index.php?qa=admin&qa_1=general" \
+ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general" \
     "$(myynh_urlencode "option_site_title=$q2a_name")" \
     "$(myynh_urlencode "option_site_url=https://$domain$path")" \
     "option_neat_urls=0" \
