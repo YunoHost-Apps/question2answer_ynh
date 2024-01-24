@@ -48,6 +48,10 @@ ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="yo
 ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-password" --replace_string="$db_pwd"
 ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-db-name" --replace_string="$db_name"
 
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R "$app:www-data" "$install_dir"
+
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
