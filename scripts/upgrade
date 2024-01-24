@@ -16,10 +16,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
 
-if grep 'qa-ldap-login' "$install_dir/qa-include/pages/login.php"; then
-    has_ldap=1
-else
-    has_ldap=0
+if ! grep --quiet 'qa-ldap-login' "$install_dir/qa-include/pages/login.php"; then
     ynh_print_warn "The LDAP plugin will be installed, but not configured, you'll have to do it in the Question2Answer admin"
 fi
 
@@ -30,67 +27,31 @@ ynh_script_progression --message="Upgrading source files..." --time --weight=1
 
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir" --full_replace=1 --keep="qa-config.php"
+ynh_setup_source --source_id="ldap" --dest_dir="$install_dir/qa-plugin/qa-ldap-login"
 
-# Setup LDAP
-wget -O qa-ldap-login.zip https://github.com/zakkak/qa-ldap-login/archive/$ldap_login_commit.zip 2>&1
-unzip qa-ldap-login.zip -d $install_dir/qa-plugin
-mv $install_dir/qa-plugin/qa-ldap-login-$ldap_login_commit $install_dir/qa-plugin/qa-ldap-login
+ynh_replace_string \
+    --target_file="$install_dir/qa-include/pages/login.php" \
+    --match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';" \
+    --replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"
 
-ynh_replace_string\
-    --match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';"\
-    --replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"\
-    --target_file="$install_dir/qa-include/pages/login.php"
-
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R $app:www-data "$install_dir"
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading PHP-FPM configuration..." --time --weight=1
-
-# Create a dedicated PHP-FPM config
-ynh_add_fpm_config
-
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --time --weight=1
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
-
-#=================================================
-# SPECIFIC UPGRADE
-#=================================================
-# UPGRADE TRANSLATIONS
-#=================================================
-ynh_script_progression --message="Upgrading Translations..." --time --weight=1
-
-### French
-if [ $language == "fr" ]; then
-	if [ -e $install_dir/qa-lang/fr ]; then
-		cd $install_dir/qa-lang/fr
-		git pull 2>&1
-		cd -
-	else
-		git clone https://github.com/mrflos/q2a-lang-fr $install_dir/qa-lang/fr 2>&1
-	fi
+if [ "$language" == "fr" ]; then
+    ynh_setup_source --source_id="lang_fr" --dest_dir="$install_dir/qa-lang/fr"
 fi
 
 chmod 750 "$install_dir"
 chmod -R o-rwx "$install_dir"
-chown -R $app:www-data "$install_dir"
+chown -R "$app:www-data" "$install_dir"
 
 #=================================================
-# GENERIC FINALIZATION
+# REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
-# RELOAD NGINX
-#=================================================
-#REMOVEME? ynh_script_progression --message="Reloading NGINX web server..." --time --weight=1
+ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
 
-#REMOVEME? ynh_systemd_action --service_name=nginx --action=reload
+# Create a dedicated PHP-FPM config
+ynh_add_fpm_config
+
+# Create a dedicated NGINX config
+ynh_add_nginx_config
 
 #=================================================
 # END OF SCRIPT
