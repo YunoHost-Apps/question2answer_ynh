@@ -23,7 +23,6 @@ ynh_script_progression --message="Setting up source files..." --weight=3
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
 ynh_setup_source --source_id="ldap" --dest_dir="$install_dir/qa-plugin/qa-ldap-login"
-ynh_exec_warn ls -lah "$install_dir/qa-plugin/qa-ldap-login"
 
 ynh_replace_string \
     --target_file="$install_dir/qa-include/pages/login.php" \
