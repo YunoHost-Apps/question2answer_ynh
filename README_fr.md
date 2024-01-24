@@ -19,20 +19,13 @@ Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) po
 Question2Answer (Q2A) est une plateforme de Questions/Réponses pour PHP/MySQL.
 
 
-**Version incluse :** 1.8.6~ynh2
+**Version incluse :** 1.8.8~ynh1
 
 **Démo :** http://demo.question2answer.org
 
 ## Captures d’écran
 
 ![Capture d’écran de Question2Answer](./doc/screenshots/install_screenshot.png)
-
-## Avertissements / informations importantes
-
-## Configuration
-
-Cette application se configure via son interface administrateur, accessible sur `https://mondomaine/monquestion2answer/index.php/admin/`
-
 
 ## Documentations et ressources
 
