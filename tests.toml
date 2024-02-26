@@ -1,0 +1,17 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/tests.v1.schema.json
+
+test_format = 1.0
+
+[default]
+
+    # ------------
+    # Tests to run
+    # ------------
+
+    # -------------------------------
+    # Default args to use for install
+    # -------------------------------
+
+    args.q2a_name = "ATestQ2ASite"
+
+    test_upgrade_from.e10bb47279447b9e1dce38268400cae10a140a7e.name = "Packaging v1"
