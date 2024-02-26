@@ -49,7 +49,7 @@ ynh_local_curl_csrf () {
     fi
 
     # Curl the URL for the CSRF token
-    data=$(curl --show-error --insecure --location --header "Host: $domain" --resolve $domain:443:127.0.0.1 "$full_page_url" --cookie-jar $cookiefile --cookie $cookiefile)
+    data=$(curl --no-progress-meter --show-error --insecure --location --header "Host: $domain" --resolve $domain:443:127.0.0.1 "$full_page_url" --cookie-jar $cookiefile --cookie $cookiefile)
 
     local code_line=$(echo "$data" | grep "input name=\"code\"")
 
