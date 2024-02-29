@@ -19,7 +19,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 Question2Answer (Q2A) is a popular open source Q&A platform for PHP/MySQL.
 
 
-**Shipped version:** 1.8.6~ynh2
+**Shipped version:** 1.8.8~ynh1
 
 **Demo:** http://demo.question2answer.org
 
