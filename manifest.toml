@@ -7,7 +7,7 @@ name = "Question2Answer"
 description.en = "Platform for Question&Answer sites."
 description.fr = "Plateforme de Question/Réponses."
 
-version = "1.8.6~ynh2"
+version = "1.8.8~ynh1"
 
 maintainers = ["Nils Van Zuijlen"]
 
@@ -58,14 +58,14 @@ ram.runtime = "70M"
 
 [resources]
     [resources.sources.main]
-    url = "https://github.com/q2a/question2answer/releases/download/v1.8.6/question2answer-1.8.6.zip"
-    sha256 = "9200234584f576ff6b651baa9cfa08795cfda6c303d855a1bf9df6183f25b2a9"
+    url = "https://github.com/q2a/question2answer/releases/download/v1.8.8/question2answer-1.8.8.zip"
+    sha256 = "1456ef9ebd4e8029e43e819be158a69f73c919ca38350f230fece1a6907ec4d2"
     autoupdate.strategy = "latest_github_release"
     autoupdate.asset = "^question2answer-.*\\.zip$"
 
     [resources.sources.ldap]
-    url = "https://github.com/zakkak/qa-ldap-login/archive/857ad8bf3ca891cb33fa6e8816ed0d3e198c1afc.zip"
-    sha256 = "a584525c43410b1029e767265ea93e16e945a00c70e9358876407986f144790a"
+    url = "https://github.com/zakkak/qa-ldap-login/archive/857ad8bf3ca891cb33fa6e8816ed0d3e198c1afc.tar.gz"
+    sha256 = "9f45f391c83b2fea42d4d171208a96c839d2b08e936db6e079530db9bf6f7d15"
 
     autoupdate.upstream = "https://github.com/zakkak/qa-ldap-login"
     autoupdate.strategy = "latest_github_commit"
