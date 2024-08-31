@@ -1,20 +1,12 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+ynh_script_progression "Ensuring downward compatibility..."
 
 if ! grep --quiet 'qa-ldap-login' "$install_dir/qa-include/pages/login.php"; then
     ynh_print_warn "The LDAP plugin will be installed, but not configured, you'll have to do it in the Question2Answer admin"
@@ -23,38 +15,37 @@ fi
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Upgrading source files..." --weight=1
+ynh_script_progression "Upgrading source files..."
 
 # Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source --dest_dir="$install_dir" --full_replace=1 --keep="qa-config.php"
+ynh_setup_source --dest_dir="$install_dir" --full_replace --keep="qa-config.php"
 ynh_setup_source --source_id="ldap" --dest_dir="$install_dir/qa-plugin/qa-ldap-login"
 
-ynh_replace_string \
-    --target_file="$install_dir/qa-include/pages/login.php" \
-    --match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';" \
-    --replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"
+ynh_replace \
+    --file="$install_dir/qa-include/pages/login.php" \
+    --match="require_once QA_INCLUDE_DIR . 'db/selects.php';" \
+    --replace="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"
 
 if [ "$language" == "fr" ]; then
     ynh_setup_source --source_id="lang_fr" --dest_dir="$install_dir/qa-lang/fr"
 fi
 
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R "$app:www-data" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:www-data" "$install_dir"
 #=================================================
 # REAPPLY SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Upgrading system configurations related to $app..." --weight=1
+ynh_script_progression "Upgrading system configurations related to $app..."
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config
+ynh_config_add_phpfpm
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression "Upgrade of $app completed"

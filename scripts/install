@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -18,55 +12,53 @@ admin_email=$(ynh_user_get_info --username="$admin" --key=mail)
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Setting up source files..." --weight=3
+ynh_script_progression "Setting up source files..."
 
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source --dest_dir="$install_dir"
 ynh_setup_source --source_id="ldap" --dest_dir="$install_dir/qa-plugin/qa-ldap-login"
 
-ynh_replace_string \
-    --target_file="$install_dir/qa-include/pages/login.php" \
-    --match_string="require_once QA_INCLUDE_DIR . 'db/selects.php';" \
-    --replace_string="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"
+ynh_replace \
+    --file="$install_dir/qa-include/pages/login.php" \
+    --match="require_once QA_INCLUDE_DIR . 'db/selects.php';" \
+    --replace="require_once QA_INCLUDE_DIR . 'db/selects.php';\r\n		require_once QA_INCLUDE_DIR . '../qa-plugin/qa-ldap-login/qa-ldap-process.php';"
 
 if [ "$language" == "fr" ]; then
     ynh_setup_source --source_id="lang_fr" --dest_dir="$install_dir/qa-lang/fr"
 fi
 
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R "$app:www-data" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:www-data" "$install_dir"
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding a configuration file..."
+ynh_script_progression "Adding $app's configuration..."
 
 mv "$install_dir/qa-config-example.php" "$install_dir/qa-config.php"
 
-ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-username" --replace_string="$db_user"
-ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-password" --replace_string="$db_pwd"
-ynh_replace_string --target_file="$install_dir/qa-config.php" --match_string="your-mysql-db-name" --replace_string="$db_name"
+ynh_replace --file="$install_dir/qa-config.php" --match="your-mysql-username" --replace="$db_user"
+ynh_replace --file="$install_dir/qa-config.php" --match="your-mysql-password" --replace="$db_pwd"
+ynh_replace --file="$install_dir/qa-config.php" --match="your-mysql-db-name" --replace="$db_name"
 
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R "$app:www-data" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:www-data" "$install_dir"
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+ynh_script_progression "Adding system configurations related to $app..."
 
 # Create a dedicated PHP-FPM config
-ynh_add_fpm_config
+ynh_config_add_phpfpm
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 #=================================================
 # SETUP APPLICATION WITH CURL
 #=================================================
-ynh_script_progression --message="Finalizing installation..." --weight=4
+ynh_script_progression "Finalizing installation..."
 
 admin_temp_pass=$(ynh_string_random --length=10)
 
@@ -84,20 +76,19 @@ ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general" \
     "dosaveoptions=1" \
     "has_js=0"
 
-ynh_add_config --template="ldap.sql" --destination="$install_dir/ldap.sql"
-ynh_mysql_execute_file_as_root --database="$db_name" --file="$install_dir/ldap.sql"
-ynh_secure_remove --file="$install_dir/ldap.sql"
+ynh_config_add --template="ldap.sql" --destination="$install_dir/ldap.sql"
+ynh_mysql_db_shell " < "$install_dir/ldap.sql""
+ynh_safe_rm "$install_dir/ldap.sql"
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$install_dir/qa-config.php"
+ynh_store_file_checksum "$install_dir/qa-config.php"
 
 # Set permissions to app files
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R "$app:www-data" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:www-data" "$install_dir"
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"
