@@ -19,7 +19,7 @@ admindoc = "https://docs.question2answer.org"
 code = "https://github.com/q2a/question2answer"
 
 [integration]
-yunohost = ">= 12.1.17"
+yunohost = ">= 12.1.38"
 helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
