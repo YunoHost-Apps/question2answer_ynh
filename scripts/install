@@ -79,7 +79,7 @@ ynh_local_curl_csrf "/index.php?qa=admin&qa_1=general" \
     "has_js=0"
 
 ynh_config_add --template="ldap.sql" --destination="$install_dir/ldap.sql"
-ynh_mysql_db_shell " < "$install_dir/ldap.sql""
+ynh_mysql_db_shell < "$install_dir/ldap.sql"
 ynh_safe_rm "$install_dir/ldap.sql"
 
 # Calculate and store the config file checksum into the app settings
