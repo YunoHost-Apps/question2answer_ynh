@@ -4,8 +4,8 @@ packaging_format = 2
 
 id = "question2answer"
 name = "Question2Answer"
-description.en = "Platform for Question&Answer sites."
-description.fr = "Plateforme de Question/Réponses."
+description.en = "Platform for Question&Answer sites"
+description.fr = "Plateforme de Question/Réponses"
 
 version = "1.8.8~ynh1"
 
@@ -19,11 +19,14 @@ admindoc = "https://docs.question2answer.org"
 code = "https://github.com/q2a/question2answer"
 
 [integration]
-yunohost = ">= 11.2"
+yunohost = ">= 12.1.38"
+helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
+
 ldap = true
 sso = false
+
 disk = "50M"
 ram.build = "50M"
 ram.runtime = "70M"
@@ -80,6 +83,7 @@ ram.runtime = "70M"
     [resources.system_user]
 
     [resources.install_dir]
+    group = "www-data:r-x"
 
     [resources.permissions]
     main.url = "/"
@@ -87,9 +91,9 @@ ram.runtime = "70M"
     [resources.apt]
     packages = [
         "mariadb-server",
-        "php8.0-fpm",
-        "php8.0-cli",
-        "php8.0-mysql",
+        "php8.4-fpm",
+        "php8.4-cli",
+        "php8.4-mysql",
     ]
 
     [resources.database]
