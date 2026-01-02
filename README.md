@@ -8,7 +8,7 @@ It shall NOT be edited by hand.
   Question2Answer, packaged for YunoHost
 </h1>
 
-Platform for Question&Answer sites.
+Platform for Question&Answer sites
 
 [![🌐 Official app website](https://img.shields.io/badge/Official_app_website-darkgreen?style=for-the-badge)](https://www.question2answer.org)
 [![App Demo](https://img.shields.io/badge/App_Demo-blue?style=for-the-badge)](http://demo.question2answer.org)
