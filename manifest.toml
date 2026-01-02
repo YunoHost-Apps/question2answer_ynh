@@ -4,8 +4,8 @@ packaging_format = 2
 
 id = "question2answer"
 name = "Question2Answer"
-description.en = "Platform for Question&Answer sites."
-description.fr = "Plateforme de Question/Réponses."
+description.en = "Platform for Question&Answer sites"
+description.fr = "Plateforme de Question/Réponses"
 
 version = "1.8.8~ynh1"
 
